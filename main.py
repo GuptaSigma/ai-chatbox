@@ -1,16 +1,21 @@
 import os
-from fastapi.responses import HTMLResponse
 import requests
-from fastapi import FastAPI, HTTPException,Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from typing import List,Dict,Any
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app=FastAPI()
-templates=Jinja2Templates(directory="templates")
+app = FastAPI(title="AI Chatbot Assessment")
+
+# Mount Static directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 class Message(BaseModel):
@@ -20,18 +25,18 @@ class Message(BaseModel):
 class ChatPayload(BaseModel):
     messages: List[Message]
 
-
-
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/chat")
+@app.post("/api/chat")
 async def chat(payload: ChatPayload):
     if not payload.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
+
     if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set in environment variables")
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing on server")
+
     formatted_contents = [
         {
             "role": "user" if msg.role == "user" else "model",
@@ -56,5 +61,3 @@ async def chat(payload: ChatPayload):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-    
