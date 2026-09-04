@@ -13,8 +13,8 @@ load_dotenv()
 app = FastAPI(title="AI Chatbot Assessment")
 
 # Mount Static directory
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
