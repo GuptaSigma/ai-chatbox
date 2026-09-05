@@ -1,63 +1,65 @@
 import os
-import requests
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from pathlib import Path
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-from typing import List
 from dotenv import load_dotenv
+import requests
 
+app = FastAPI()
 load_dotenv()
 
-app = FastAPI(title="AI Chatbot Assessment")
+BASE_DIR = Path(__file__).resolve().parent
+static_dir = BASE_DIR / "static"
+templates_dir = BASE_DIR / "templates"
 
-# Mount Static directory
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+static_dir.mkdir(exist_ok=True)
+templates_dir.mkdir(exist_ok=True)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+templates = Jinja2Templates(directory=templates_dir)
 
-class Message(BaseModel):
-    role: str
-    content: str
-
-class ChatPayload(BaseModel):
-    messages: List[Message]
-
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+def read_root(request: Request):
+    index_file = templates_dir / "index.html"
+    if index_file.exists():
+        return templates.TemplateResponse("index.html", {"request": request})
+    return {"message": "AI Chatbox API is running!"}
 
 @app.post("/api/chat")
-async def chat(payload: ChatPayload):
-    if not payload.messages:
-        raise HTTPException(status_code=400, detail="No messages provided")
+async def chat_endpoint(request: Request):
+    try:
+        data = await request.json()
+        user_message = data.get("message") or data.get("prompt") or data.get("text") or ""
+    except Exception:
+        # Fallback if raw text or form data is sent
+        body = await request.body()
+        user_message = body.decode("utf-8")
 
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing on server")
+    if not user_message:
+        return {"response": "Please enter a message."}
 
-    formatted_contents = [
-        {
-            "role": "user" if msg.role == "user" else "model",
-            "parts": [{"text": msg.content}]
-        }
-        for msg in payload.messages
-    ]
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return {"response": "Gemini API key is missing. Add GEMINI_API_KEY to .env and restart the server."}
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-    headers = {"Content-Type": "application/json"}
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+    payload = {
+        "contents": [{"parts": [{"text": user_message}]}]
+    }
 
     try:
-        response = requests.post(url, json={"contents": formatted_contents}, headers=headers)
-        res_data = response.json()
-
-        if response.status_code != 200:
-            error_msg = res_data.get("error", {}).get("message", "API Error occurred")
-            raise HTTPException(status_code=response.status_code, detail=error_msg)
-
-        ai_response = res_data["candidates"][0]["content"]["parts"][0]["text"]
-        return {"role": "assistant", "content": ai_response}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        result = requests.post(
+            url,
+            params={"key": api_key},
+            json=payload,
+            timeout=30,
+        )
+        result.raise_for_status()
+        response_data = result.json()
+        bot_reply = response_data["candidates"][0]["content"]["parts"][0]["text"]
+        return {"response": bot_reply}
+    except requests.RequestException as error:
+        return {"response": f"Gemini request failed: {error}"}
+    except (KeyError, IndexError, TypeError):
+        return {"response": "Gemini returned an unexpected response. Please try again."}

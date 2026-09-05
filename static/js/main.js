@@ -40,13 +40,13 @@ chatForm.addEventListener('submit', async (e) => {
         const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: chatHistory })
+            body: JSON.stringify({ message: text })
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Failed to fetch');
 
-        chatHistory.push({ role: 'assistant', content: data.content });
+        chatHistory.push({ role: 'assistant', content: data.response });
         localStorage.setItem('chat_history', JSON.stringify(chatHistory));
     } catch (err) {
         chatHistory.push({ role: 'assistant', content: `⚠️ **Error:** ${err.message}` });
