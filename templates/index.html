@@ -3,36 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot - Brightlant Assessment</title>
+    <title>RUDRI - AI Chatbot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
 </head>
-<body class="bg-gray-50 h-screen flex flex-col font-sans">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 h-screen flex font-sans">
+    <!-- Left Sidebar: Chats -->
+    <div class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div class="p-4 flex items-center justify-between">
+            <h2 class="text-white font-bold text-lg">Chats</h2>
+            <div class="flex gap-2">
+                <button onclick="createNewChat()" class="bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold transition">+</button>
+                <button onclick="deleteCurrentChat()" class="bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold transition">×</button>
+            </div>
+        </div>
 
-    <header class="bg-white border-b p-4 flex justify-between items-center max-w-4xl mx-auto w-full">
-        <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">🤖 AI Assistant</h1>
-        <button onclick="clearChat()" class="text-sm bg-red-50 text-red-600 px-3 py-1.5 rounded hover:bg-red-100 transition">
-            Clear Chat
-        </button>
-    </header>
-
-    <div id="chat-container" class="flex-1 overflow-y-auto p-4 max-w-4xl mx-auto w-full space-y-4"></div>
-
-    <div id="loading" class="hidden max-w-4xl mx-auto w-full px-4 mb-2 text-gray-500 text-sm italic">
-        AI is thinking...
+        <div id="chats-list" class="flex-1 overflow-y-auto p-2 space-y-2">
+            <!-- Chat items dynamically added here -->
+        </div>
     </div>
 
-    <div class="bg-white border-t p-4 max-w-4xl mx-auto w-full">
-        <form id="chat-form" class="flex gap-2">
-            <input type="text" id="user-input" placeholder="Type your message..." 
-                   class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <button type="submit" id="send-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
-                Send
+    <!-- Center: Main Chat Area -->
+    <div class="flex-1 bg-gray-700 flex flex-col">
+        <!-- Chat Header -->
+        <div class="bg-gray-800 border-b border-gray-700 p-4 flex items-center justify-between">
+            <div>
+                <h1 id="chat-title" class="text-white font-bold text-xl">RUDRI</h1>
+                <p class="text-green-400 text-sm">🟢 Online</p>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <div class="text-center text-gray-400 mt-20">
+                <p class="text-lg">You don't have any chat history yet.</p>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden px-6 pb-2 text-gray-400 text-sm italic">
+            RUDRI is thinking...
+        </div>
+
+        <!-- Input Area -->
+        <div class="bg-gray-800 border-t border-gray-700 p-4">
+            <form id="chat-form" class="flex gap-3">
+                <input type="text" id="user-input" placeholder="Type a message..." 
+                       class="flex-1 bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400" required>
+                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition font-bold text-lg">
+                    →
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Sidebar: Settings -->
+    <div class="w-72 bg-gray-800 border-l border-gray-700 flex flex-col overflow-y-auto">
+        <div class="p-4 flex items-center justify-between border-b border-gray-700">
+            <h2 class="text-white font-bold text-lg">RUDRI Settings</h2>
+            <button onclick="toggleSettings()" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+
+        <!-- Your Identity -->
+        <div class="p-4 border-b border-gray-700">
+            <h3 class="text-green-400 font-bold mb-3 flex items-center gap-2">👥 Your Identity</h3>
+            <label class="text-gray-300 text-sm mb-2 block">Your Name:</label>
+            <input type="text" id="user-name" placeholder="Enter your name" value="Guest"
+                   class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" 
+                   onchange="updateUserName()">
+        </div>
+
+        <!-- Persona Selection -->
+        <div class="p-4 border-b border-gray-700">
+            <h3 class="text-green-400 font-bold mb-3 flex items-center gap-2">🎭 RUDRI's Persona</h3>
+            <div class="space-y-2">
+                <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-700 rounded">
+                    <input type="radio" name="persona" value="angelic" onchange="updatePersona('angelic')" checked>
+                    <span class="text-gray-300">😇 Angelic RUDRI</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-700 rounded">
+                    <input type="radio" name="persona" value="evil" onchange="updatePersona('evil')">
+                    <span class="text-gray-300">😈 Evil RUDRI</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Memory Management -->
+        <div class="p-4">
+            <h3 class="text-green-400 font-bold mb-3 flex items-center gap-2">🧠 Memory Management</h3>
+            <button onclick="clearAllChats()" class="w-full bg-red-600 hover:bg-red-700 text-white rounded px-4 py-2 transition font-medium text-sm">
+                Clear All Chats
             </button>
-        </form>
+            <button onclick="exportChats()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 transition font-medium text-sm mt-2">
+                Export Chats
+            </button>
+        </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/main.js?v=1"></script>
 </body>
 </html>

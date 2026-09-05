@@ -1,56 +1,102 @@
-# AI Chatbot Application
+# RUDRI AI Chatbot
 
-A functional, responsive, and secure AI Chatbot web application built with **FastAPI** and **Google Gemini API**. This project features a clean user interface, context-aware conversational memory, markdown/code syntax rendering, and local chat persistence.
+RUDRI is a FastAPI-based AI chatbot powered by Google Gemini. It provides a bright white and royal-blue chat interface, multiple local conversations, selectable assistant personas, markdown responses, and browser-based chat persistence.
 
-Developed as part of the Practical Development Assessment for **Brightlant Software Solutions**.
+## Features
 
----
+- Google Gemini `gemini-2.5-flash` responses
+- Angelic and Evil RUDRI personas
+- Multiple conversations in the chat history sidebar
+- Create, switch, delete, clear, and export chats
+- Chat history saved in browser `localStorage`
+- Markdown rendering for assistant responses
+- Loading and API error states
+- Responsive white and royal-blue frontend
 
-## 🚀 Live Demo
+## Requirements
 
-- **Live Web Application:** [https://your-render-app-url.onrender.com](https://your-render-app-url.onrender.com)
-- **Interactive API Documentation (Swagger):** [https://your-render-app-url.onrender.com/docs](https://your-render-app-url.onrender.com/docs)
+- Python 3.10 or newer
+- A Google Gemini API key
 
----
+## Setup
 
-## ✨ Features Implemented
+1. Open a terminal in the project folder.
 
-1. **AI Chat Interface & API Integration**
-   - Seamless real-time conversation flow with Google Gemini API (`gemini-2.5-flash`).
-   - Strict server-side handling of API keys to prevent exposure in the frontend or public repositories.
+2. Create and activate a virtual environment:
 
-2. **Local Storage Persistence**
-   - Automatically saves conversation history locally in the browser so users don't lose context on page refreshes.
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
 
-3. **Markdown & Code Formatting Support**
-   - Integrates `Marked.js` on the frontend to cleanly render code blocks, lists, bold text, and structured AI responses.
+3. Install dependencies:
 
-4. **Clear Chat Functionality**
-   - Allows users to reset the current conversation state and clear local storage with a single click.
+   ```powershell
+   pip install -r requirements.txt
+   ```
 
-5. **Loading State & Error Handling**
-   - Real-time typing/loading indicators during response latency.
-   - Robust Pydantic model validation and structured exception handling for API failures.
+4. Create a `.env` file in the project root:
 
----
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
 
-## 🛠️ Technology Stack
+   Keep this file private and do not commit it to source control.
 
-- **Backend:** Python 3, FastAPI, Uvicorn, Pydantic, Requests, Python-Dotenv
-- **Frontend:** HTML5, Tailwind CSS (via CDN), Vanilla JavaScript, Marked.js
-- **AI Model / API:** Google Gemini API (`gemini-2.5-flash`)
-- **Deployment Platform:** Render
+## Run The App
 
----
+Start the development server:
 
-## 📁 Repository Structure
+```powershell
+uvicorn main:app --reload
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+
+Interactive API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+## API
+
+### `POST /api/chat`
+
+Request body:
+
+```json
+{
+   "message": "What is 2 + 2?",
+   "persona": "angelic",
+   "userName": "Guest"
+}
+```
+
+Response:
+
+```json
+{
+   "response": "2 + 2 = 4"
+}
+```
+
+The `persona` value can be `angelic` or `evil`. The API key is read server-side from `GEMINI_API_KEY` and is never sent to the browser.
+
+## Project Structure
 
 ```text
-ai-chatbot/
-│── templates/
-│   └── index.html       # Single-page frontend layout & JS logic
-│── .env                 # Environment variables (Git-ignored)
-│── .gitignore           # File exclusion rule for git
-│── main.py              # FastAPI application server & API routes
-│── requirements.txt     # Python dependencies
-└── README.md            # Project documentation
+.
+├── main.py                 # FastAPI server and Gemini API route
+├── requirements.txt        # Python dependencies
+├── README.md               # Project documentation
+├── templates/
+│   └── index.html           # Chat interface markup
+└── static/
+   ├── css/
+   │   └── style.css        # White and royal-blue theme
+   └── js/
+      └── main.js          # Chat state, rendering, and API calls
+```
+
+## Notes
+
+- Conversations are stored only in the current browser's `localStorage`; they are not stored on the server.
+- Clearing browser site data removes locally saved conversations.
+- Tailwind CSS and Marked.js are loaded from CDN in the frontend.

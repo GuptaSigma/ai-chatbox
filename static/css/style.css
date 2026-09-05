@@ -1,3 +1,81 @@
+/* White and royal-blue theme */
+body {
+    background: #f8fbff !important;
+    color: #172554;
+}
+
+body > div {
+    background-color: #ffffff !important;
+    border-color: #dbeafe !important;
+}
+
+body > div:nth-of-type(2) {
+    background-color: #f8fbff !important;
+}
+
+body > div > div,
+body > div:nth-of-type(2) > div {
+    background-color: #ffffff !important;
+    border-color: #dbeafe !important;
+}
+
+#chats-list > div {
+    background-color: #eff6ff !important;
+    color: #1e3a8a !important;
+}
+
+#chats-list > div.bg-green-600 {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+#chat-container .bg-green-600 {
+    background-color: #2563eb !important;
+}
+
+#chat-container .bg-gray-600 {
+    background-color: #dbeafe !important;
+    color: #172554 !important;
+    border-color: #bfdbfe !important;
+}
+
+input {
+    background-color: #ffffff !important;
+    color: #172554 !important;
+    border-color: #bfdbfe !important;
+}
+
+button.bg-green-500,
+button.bg-blue-600 {
+    background-color: #1d4ed8 !important;
+}
+
+button.bg-green-500:hover,
+button.bg-blue-600:hover {
+    background-color: #1e40af !important;
+}
+
+.text-green-400,
+.text-green-500 {
+    color: #1d4ed8 !important;
+}
+
+.text-white {
+    color: #172554 !important;
+}
+
+#chat-container .bg-green-600,
+#chats-list > div.bg-green-600,
+button.bg-green-500,
+button.bg-blue-600 {
+    color: #ffffff !important;
+}
+
+.text-gray-300,
+.text-gray-400 {
+    color: #475569 !important;
+}
+
 /* Custom scrollbar and minor structural polish */
 #chat-container::-webkit-scrollbar {
     width: 6px;

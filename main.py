@@ -31,10 +31,14 @@ async def chat_endpoint(request: Request):
     try:
         data = await request.json()
         user_message = data.get("message") or data.get("prompt") or data.get("text") or ""
+        persona = data.get("persona", "angelic")
+        user_name = data.get("userName", "Guest")
     except Exception:
         # Fallback if raw text or form data is sent
         body = await request.body()
         user_message = body.decode("utf-8")
+        persona = "angelic"
+        user_name = "Guest"
 
     if not user_message:
         return {"response": "Please enter a message."}
@@ -43,8 +47,17 @@ async def chat_endpoint(request: Request):
     if not api_key:
         return {"response": "Gemini API key is missing. Add GEMINI_API_KEY to .env and restart the server."}
 
+    # Persona system prompts
+    persona_prompts = {
+        "angelic": f"You are RUDRI, a helpful, kind, and angelic AI assistant speaking to {user_name}. Be positive, supportive, and always aim to help.",
+        "evil": f"You are RUDRI, a mischievous and witty AI assistant speaking to {user_name}. Be clever, slightly sarcastic, and entertaining. Push boundaries playfully but don't be harmful."
+    }
+    
+    system_prompt = persona_prompts.get(persona, persona_prompts["angelic"])
+
     url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     payload = {
+        "system_instruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"parts": [{"text": user_message}]}]
     }
 
